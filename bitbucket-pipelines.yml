@@ -1,0 +1,22 @@
+image: atlassian/default-image:latest
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Deploy to Server
+          caches:
+            - custom-docker-cache
+          script:
+            - echo "Deploying to server..."
+            - pipe: atlassian/ssh-run:0.8.0
+              variables:
+                SSH_USER: $SERVER_USER
+                SERVER: $SERVER_IP
+                COMMAND: |
+                  cd /root/backend
+                  docker compose up --build -d 
+
+definitions:
+  caches:
+    custom-docker-cache: /var/lib/docker

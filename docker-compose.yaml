@@ -1,0 +1,87 @@
+version: "3.8"
+services:
+  web:
+    build: ./FX
+    command: ./web-init-prod.sh
+    environment:
+      # BACKEND CONFIG
+      - API_ENVIRONMENT=${PROJECT_NAME:-trading}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+
+      - API_KEY_ALPACA=${API_KEY_ALPACA}
+      - API_SECRET_ALPACA=${API_SECRET_ALPACA}
+
+      # REDIS CONFIG
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_POOL_MAX_CONNECTIONS=${REDIS_POOL_MAX_CONNECTIONS}
+      - REDIS_DATABASE=${REDIS_DATABASE}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_EXPIRE_KEY=${REDIS_EXPIRE_KEY}
+
+      # POSTGRES CONFIG
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+
+      # SERVER CONFIG gunicorn_conf.py
+      # https://docs.gunicorn.org/en/stable/settings.html#settings
+      - GUNICORN_KEEP_ALIVE=${GUNICORN_KEEP_ALIVE}
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT}
+      - GUNICORN_GRACEFUL_TIMEOUT=${GUNICORN_GRACEFUL_TIMEOUT}
+      - GUNICORN_ACCESS_LOG=${GUNICORN_ACCESS_LOG}
+      - GUNICORN_ERROR_LOG=${GUNICORN_ERROR_LOG}
+      - GUNICORN_WORKERS_PER_CORE=${GUNICORN_WORKERS_PER_CORE}
+      - GUNICORN_MAX_WORKERS=${GUNICORN_MAX_WORKERS}
+      - GUNICORN_MAX_REQUESTS=${GUNICORN_MAX_REQUESTS}
+    expose:
+      - 8000
+    volumes:
+      - static_files:/app/static
+      - ./media:/app/media
+    depends_on:
+      - postgres
+      - redis
+
+  redis:
+    image: redis:7.2.3-alpine
+    restart: always
+    ports:
+      - "${REDIS_PORT}:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+
+
+  postgres:
+    image: postgres:12.9-alpine3.15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+
+  nginx:
+    build: ./nginx
+    ports:
+      - ${PORT}:80
+    volumes:
+      - static_files:/app/static
+      - ./media:/app/media
+    depends_on:
+      - web
+
+
+volumes:
+  static_files:
+  postgres_data:
+  redis_data:

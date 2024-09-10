@@ -1,0 +1,38 @@
+---
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace  # The hook removes extra whitespaces in your code.
+      - id: check-yaml  # The hook ensures that .yaml files are appropriately structured.
+      - id: check-docstring-first  # The hook ensures that the docstring is the first thing in a function or a class.
+      - id: check-added-large-files  # The hook checks that you don’t commit any vast files.
+      - id: check-merge-conflict  # The hook checks that you don’t commit any merge conflicts.
+      - id: check-ast  # The hook checks that your Python code is syntactically correct.
+      - id: debug-statements  # The hook checks that you don’t commit any debug statements.
+      - id: check-json  # The hook ensures that .json files are appropriately structured.
+      - id: pretty-format-json  # sets a standard for formatting json files.
+      - id: detect-private-key  # The hook checks that you don’t commit any private keys.
+      - id: end-of-file-fixer  # The hook ensures that files end with a newline.
+      - id: requirements-txt-fixer  # sorts entries in requirements.txt.
+
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black", "--filter-files", "--line-width", "120"]
+  - repo: https://github.com/ambv/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        args: [--line-length=120]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies: ["flake8-blind-except", "flake8-bugbear", "flake8-comprehensions", "flake8-implicit-str-concat", "pydocstyle", "flake8-print", "pep8-naming"]
+        args: [--max-line-length=120]
+        exclude: ./users/migrations|./users/tests|./api_trade/migrations|./api_trade/tests # Exclude migrations and tests directories
